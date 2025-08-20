@@ -1,8 +1,8 @@
 // src/controllers/alertsController.js
-// ... imports
 const User = require('../models/User');
 const Alert = require('../models/Alerts');
 
+// add a new alert for a user
 exports.addAlert = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -24,6 +24,7 @@ exports.addAlert = async (req, res) => {
     }
 };
 
+// get alets for a user
 exports.getAlerts = async (req, res) => {
     try {
         const { userId } = req.params;

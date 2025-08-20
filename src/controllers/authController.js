@@ -25,26 +25,26 @@ exports.signup = async (req, res) => {
       // Save the new user document
       const savedUser = await newUser.save();
 
-      // **FIXED:** Create initial documents for the new user, now including userId
+      // Create initial documents for the new user
       const newThresholds = new Thresholds({
-          userId: savedUser._id, // Add this line
-          temperature: 30, // Default values
+          userId: savedUser._id,
+          temperature: 30,
           humidity: 70,
           ammonia: 10
       });
       await newThresholds.save();
 
       const newControls = new Controls({
-          userId: savedUser._id, // Add this line
-          fanStatus: false, // Default fan off
+          userId: savedUser._id,
+          fanStatus: false,
           fanAutoMode: true,
           manualOverrideEndTimestamp: null
       });
       await newControls.save();
 
-      // Optional: Create an initial welcome alert
+      // Create an initial welcome alert
       const newAlert = new Alert({
-          userId: savedUser._id, // Add this line
+          userId: savedUser._id,
           type: 'Welcome',
           message: 'Welcome to your Farm App! Your account is ready.',
           severity: 'info'

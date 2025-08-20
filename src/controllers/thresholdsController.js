@@ -1,8 +1,8 @@
 // src/controllers/thresholdsController.js
-// ... imports
 const User = require('../models/User');
 const Thresholds = require('../models/Thresholds');
 
+// Get thresholds for a user
 exports.getThresholds = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -16,6 +16,7 @@ exports.getThresholds = async (req, res) => {
     }
 };
 
+// Update thresholds for a user
 exports.updateThresholds = async (req, res) => {
     try {
         const { userId } = req.params;

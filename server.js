@@ -1,6 +1,6 @@
 // server.js
 const express = require('express');
-const socketIo = require('socket.io'); // Import socket.io
+const socketIo = require('socket.io');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -11,14 +11,14 @@ const sensorDataRoutes = require('./src/routes/sensorDataRoutes');
 const alertRoutes = require('./src/routes/alertsRoutes');
 const controlRoutes = require('./src/routes/controlsRoutes');
 const thresholdRoutes = require('./src/routes/thresholdRoutes');
-const userRoutes = require('./src/routes/userRoutes'); // New import
+const userRoutes = require('./src/routes/userRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
-const authRoutes = require('./src/routes/authRoutes'); // New import
+const authRoutes = require('./src/routes/authRoutes');
 
 
 
-const http = require('http'); // Import the http module
-const { Server } = require("socket.io"); // Import the Server class
+const http = require('http'); // Create an HTTP server
+const { Server } = require("socket.io"); // Import the Socket.IO server constructor
 
 dotenv.config();
 
@@ -46,6 +46,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('A client connected:', socket.id);
   socket.on('disconnect', () => {
@@ -53,10 +54,12 @@ io.on('connection', (socket) => {
   });
 });
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB...', err));
 
+// Middleware for CORS and body parsing
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -72,6 +75,7 @@ app.use('/api/thresholds', thresholdRoutes);
 app.use('/api/users', userRoutes); 
 app.use('/api/device', deviceRoutes); 
 app.use('/api/auth', authRoutes); 
+
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

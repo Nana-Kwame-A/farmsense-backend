@@ -1,8 +1,8 @@
 // src/controllers/controlsController.js
-// ... imports
 const User = require('../models/User');
 const Controls = require('../models/Controls');
 
+// Get controls for a user
 exports.getControls = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -16,6 +16,7 @@ exports.getControls = async (req, res) => {
     }
 };
 
+// Update controls for a user
 exports.updateControls = async (req, res) => {
     try {
         const { userId } = req.params;

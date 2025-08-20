@@ -1,7 +1,8 @@
 // src/controllers/sensorDataController.js
 const SensorData = require("../models/SensorData");
-const User = require("../models/User"); // <-- ADD THIS LINE
+const User = require("../models/User");
 
+// Get the latest sensor data for a user
 exports.getLatestSensorData = async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from the URL parameter
@@ -22,11 +23,12 @@ exports.getLatestSensorData = async (req, res) => {
   }
 };
 
+// Add new sensor data for a user
+// This function assumes that the request body contains userId and sensor data fields
 exports.addSensorData = async (req, res) => {
   try {
     const { temperature, humidity, nh3, userId } = req.body;
 
-    // The 'User' model is now correctly defined
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -40,8 +42,6 @@ exports.addSensorData = async (req, res) => {
     });
     await newSensorData.save();
 
-    console.log("Emitting new-sensor-data:", newSensorData);
-
     // After saving, emit the new data to all connected clients
     req.io.emit("new-sensor-data", newSensorData);
 
@@ -53,6 +53,7 @@ exports.addSensorData = async (req, res) => {
   }
 };
 
+// Get all sensor data for a user
 exports.getAllSensorData = async (req, res) => {
   try {
     const allData = await SensorData.find({});

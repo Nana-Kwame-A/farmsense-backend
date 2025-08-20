@@ -1,6 +1,7 @@
 // src/models/Control.js
 const mongoose = require('mongoose');
 
+// Define the Controls schema
 const controlsSchema = new mongoose.Schema({
   fanStatus: { type: Boolean, default: false },
   fanAutoMode: { type: Boolean, default: true },

@@ -1,6 +1,25 @@
 // src/controllers/userController.js
 const User = require('../models/User');
 
+const SensorData = require('../models/SensorData');
+const Thresholds = require('../models/Thresholds');
+const Controls = require('../models/Controls');
+const Alert = require('../models/Alerts');
+
+// Get user profile by userId
+exports.getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get userId from the URL parameter
+    const user = await User.findById(userId).select('-password'); // Exclude password from the response
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 exports.checkDeviceRegistration = async (req, res) => {
   try {
     const { userId } = req.params; 
@@ -15,6 +34,7 @@ exports.checkDeviceRegistration = async (req, res) => {
   }
 };
 
+// Link a device to a user
 exports.linkDevice = async (req, res) => {
   try {
     const { userId } = req.params; // Changed from firebaseUid
@@ -31,6 +51,7 @@ exports.linkDevice = async (req, res) => {
     res.status(500).json({ message: 'Server error during linking', error: error.message });
   }
 };
+
 
 // You'll need to implement these if they don't exist:
 exports.unlinkDevice = async (req, res) => {
@@ -69,6 +90,9 @@ exports.getUserDevices = async (req, res) => {
   }
 };
 
+// Get all users (for admin purposes)
+// This function is useful for admin panels or user management interfaces.
+// It retrieves all users without sensitive information like passwords.
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -78,6 +102,8 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+// Register a new user
+// This function is used for user signup.
 exports.registerUser = async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -91,3 +117,32 @@ exports.registerUser = async (req, res) => {
       res.status(500).json({ message: 'Error during signup', error: error.message });
     }
   };
+
+
+  // i might delete this
+  // Get all dashboard data for a user
+exports.getUserDashboard = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const sensorData = await SensorData.find({ userId });
+    const thresholds = await Thresholds.findOne({ userId });
+    const controls = await Controls.findOne({ userId });
+    const alerts = await Alert.find({ userId }).sort({ timestamp: -1 });
+
+    res.status(200).json({
+      user,
+      sensorData,
+      thresholds,
+      controls,
+      alerts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error getting dashboard data', error: error.message });
+  }
+};

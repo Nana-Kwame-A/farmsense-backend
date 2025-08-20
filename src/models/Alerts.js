@@ -4,7 +4,7 @@ const alertSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'User' // This links the alert to a specific User document
+        ref: 'User'
     },
     type: {
         type: String,
