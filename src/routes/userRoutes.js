@@ -16,12 +16,18 @@ const userController = require("../controllers/userController");
 // device information from the user's profile.
 // The getUserDevices route retrieves all devices associated with a specific user, which can be useful
 // for monitoring or managing user devices.
-router.get("/:userId", userController.getUserProfile); // Route to get a user
+// More specific routes should come first to be matched exactly
+// The order is crucial!
+
 router.get("/:userId/dashboard", userController.getUserDashboard);
-router.get("/", userController.getAllUsers); // Route to get all users
 router.get("/:userId/is-registered", userController.checkDeviceRegistration);
+router.get("/:userId/devices", userController.getUserDevices);
 router.post("/:userId/link-device", userController.linkDevice);
 router.post("/:userId/unlink-device", userController.unlinkDevice);
-router.get("/:userId/devices", userController.getUserDevices);
+
+// More general routes come after specific ones
+router.get("/:userId", userController.getUserProfile); // Get a specific user's profile by ID
+router.get("/", userController.getAllUsers); // Get all users
+
 
 module.exports = router;
