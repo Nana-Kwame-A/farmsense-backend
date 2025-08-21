@@ -16,6 +16,7 @@ const userController = require("../controllers/userController");
 // device information from the user's profile.
 // The getUserDevices route retrieves all devices associated with a specific user, which can be useful
 // for monitoring or managing user devices.
+
 // More specific routes should come first to be matched exactly
 // The order is crucial!
 

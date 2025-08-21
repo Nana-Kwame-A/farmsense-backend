@@ -6,6 +6,7 @@ const controlsSchema = new mongoose.Schema({
   fanStatus: { type: Boolean, default: false },
   fanAutoMode: { type: Boolean, default: true },
   manualOverrideEndTimestamp: { type: Date, required: false },
+  useCustomThresholds: { type: Boolean, default: false },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Reference to the User model
