@@ -1,5 +1,10 @@
-// src/models/Control.js
 const mongoose = require('mongoose');
+
+// Define the BirdConfig schema
+const birdConfigSchema = new mongoose.Schema({
+  type: { type: String, enum: ['Broiler', 'Layer'] },
+  ageInWeeks: { type: Number, min: 0, max: 100 },
+});
 
 // Define the Controls schema
 const controlsSchema = new mongoose.Schema({
@@ -7,10 +12,11 @@ const controlsSchema = new mongoose.Schema({
   fanAutoMode: { type: Boolean, default: true },
   manualOverrideEndTimestamp: { type: Date, required: false },
   useCustomThresholds: { type: Boolean, default: false },
+  birdConfig: { type: birdConfigSchema, required: false, default: null }, // Add this field
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
-    required: true, // Ensure that every control document is linked to a user
+    ref: 'User',
+    required: true,
   }
 });
 
