@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  role: { // <-- ADD THIS FIELD
+    type: String,
+    enum: ['user', 'admin'], // Optional: Restrict possible values
+    default: 'user',
+    required: true,
+  },
   isDeviceRegistered: {
     type: Boolean,
     default: false,
