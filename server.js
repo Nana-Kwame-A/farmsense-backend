@@ -109,14 +109,52 @@ app.get('/', (req, res) => {
         </div>
         <div class="endpoints">
           <h2>🔗 Available Endpoints</h2>
+
+          <h3>📡 Sensor Data</h3>
           <ul>
-            <li><a href="/api/sensor-data">/api/sensor-data</a></li>
-            <li><a href="/api/alerts">/api/alerts</a></li>
-            <li><a href="/api/controls">/api/controls</a></li>
-            <li><a href="/api/thresholds">/api/thresholds</a></li>
-            <li><a href="/api/users">/api/users</a></li>
-            <li><a href="/api/device">/api/device</a></li>
-            <li><a href="/api/auth">/api/auth</a></li>
+            <li><a href="/api/sensor-data">GET /api/sensor-data</a> → Retrieve all sensor data</li>
+            <li>POST /api/sensor-data → Submit new sensor data</li>
+          </ul>
+
+          <h3>🚨 Alerts</h3>
+          <ul>
+            <li><a href="/api/alerts">GET /api/alerts</a> → Get all alerts</li>
+            <li>POST /api/alerts → Create a new alert</li>
+          </ul>
+
+          <h3>⚙️ Controls</h3>
+          <ul>
+            <li><a href="/api/controls">GET /api/controls</a> → Get current control states</li>
+            <li>POST /api/controls → Update control settings (e.g., fans, auto mode)</li>
+          </ul>
+
+          <h3>📊 Thresholds</h3>
+          <ul>
+            <li><a href="/api/thresholds">GET /api/thresholds</a> → Retrieve notification thresholds</li>
+            <li>POST /api/thresholds → Update thresholds</li>
+          </ul>
+
+          <h3>👤 Users</h3>
+          <ul>
+            <li><a href="/api/users">GET /api/users</a> → Get all users</li>
+            <li>GET /api/users/:userId → Get a specific user's profile</li>
+            <li>GET /api/users/:userId/dashboard → Get a user dashboard</li>
+            <li>GET /api/users/:userId/is-registered → Check if a device is registered</li>
+            <li>GET /api/users/:userId/devices → Get all linked devices</li>
+            <li>POST /api/users/:userId/link-device → Link a device</li>
+            <li>POST /api/users/:userId/unlink-device → Unlink a device</li>
+          </ul>
+
+          <h3>🔌 Devices</h3>
+          <ul>
+            <li><a href="/api/device">GET /api/device</a> → Get all devices</li>
+            <li>POST /api/device → Register a new device</li>
+          </ul>
+
+          <h3>🔑 Auth</h3>
+          <ul>
+            <li>POST /api/auth/register → Register a new user</li>
+            <li>POST /api/auth/login → Authenticate a user</li>
           </ul>
         </div>
       </body>
