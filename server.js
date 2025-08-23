@@ -64,7 +64,22 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to the FarmSense API!' });
+  res.status(200).json({
+    message: 'Welcome to the FarmSense API!',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime() + ' seconds',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    endpoints: {
+      sensorData: '/api/sensor-data',
+      alerts: '/api/alerts',
+      controls: '/api/controls',
+      thresholds: '/api/thresholds',
+      users: '/api/users',
+      devices: '/api/device',
+      auth: '/api/auth'
+    }
+  });
 });
 
 // Use all API routes
