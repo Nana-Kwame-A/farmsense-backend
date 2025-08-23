@@ -70,6 +70,7 @@ app.get('/', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime() + ' seconds',
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    socketIO: io.engine.clientsCount > 0 ? `${io.engine.clientsCount} clients connected` : 'No active connections',
     endpoints: {
       sensorData: '/api/sensor-data',
       alerts: '/api/alerts',
