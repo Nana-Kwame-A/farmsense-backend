@@ -13,6 +13,7 @@ const authController = require('../controllers/authController');
 // generating JWT tokens, and interacting with the User model to create or authenticate users.
 router.post('/signup', authController.signup);
 router.post('/signin', authController.signin);
+router.post('/admin-signin', authController.adminSignin); // <-- Add this line
 router.post('/forgot-password', authController.forgotPassword);
 
 module.exports = router;

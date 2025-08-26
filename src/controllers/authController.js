@@ -98,6 +98,38 @@ exports.signin = async (req, res) => {
   }
 };
 
+exports.adminSignin = async (req, res) => {
+  try {
+    const { usernameOrEmail, password } = req.body;
+
+    const user = await User.findOne({
+      $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // *** IMPORTANT: Check if the user has the 'admin' role ***
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied: Not an administrator' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Create a JWT token upon successful admin sign-in
+    // Include the role in the token payload
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+    // Send back user data including role
+    res.status(200).json({ message: 'Signed in as administrator successfully', token, user: { id: user._id, email: user.email, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ message: 'Error during admin signin', error: error.message });
+  }
+};
+
 exports.forgotPassword = (req, res) => {
   res.status(501).json({ message: 'Forgot password functionality not yet implemented' });
 };
