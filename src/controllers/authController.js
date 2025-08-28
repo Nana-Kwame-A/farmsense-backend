@@ -184,3 +184,8 @@ exports.adminSignin = async (req, res) => {
 //     res.status(500).json({ message: 'Error during password reset', error: error.message });
 //   }
 // };
+
+// future implementation
+exports.forgotPassword = (req, res) => {
+  res.status(501).json({ message: 'Forgot password functionality not yet implemented' });
+};
