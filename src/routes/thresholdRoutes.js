@@ -11,6 +11,6 @@ const thresholdsController = require('../controllers/thresholdsController');
 // The thresholdsController contains the logic for handling these requests, including validation and database interactions.
 // The thresholds settings are stored in the Thresholds model, which is linked to the User model via the userId field.
 router.get('/:userId', thresholdsController.getThresholds);
-router.post('/:userId', thresholdsController.updateThresholds); // You may need a controller for this if it doesn't exist
+router.patch('/:userId', thresholdsController.updateThresholds); // Changed from POST to PATCH to match frontend
 
 module.exports = router;

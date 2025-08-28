@@ -130,6 +130,57 @@ exports.adminSignin = async (req, res) => {
   }
 };
 
-exports.forgotPassword = (req, res) => {
-  res.status(501).json({ message: 'Forgot password functionality not yet implemented' });
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    // Set reset token and expiry on user
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+    // Construct reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // Send email
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+    const mailOptions = {
+      to: user.email,
+      from: process.env.SMTP_USER,
+      subject: 'Password Reset Request',
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2c3e50;">Password Reset Request</h2>
+          <p>Hello ${user.username || ''},</p>
+          <p>You recently requested to reset your password for your account. Click the button below to reset it:</p>
+          <p style="text-align: center; margin: 20px 0;">
+            <a href="${resetUrl}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          </p>
+          <p>If the button above doesn’t work, copy and paste the following link into your browser:</p>
+          <p><a href="${resetUrl}">${resetUrl}</a></p>
+          <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+          <p>Thanks,<br>The Farm App Team</p>
+        </div>
+      `
+    };
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Password reset link sent' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error during password reset', error: error.message });
+  }
 };
