@@ -13,88 +13,111 @@ exports.signup = async (req, res) => {
   try {
     console.log('Received signup request with:', req.body);
 
-      const { username, password, email } = req.body;
+    const { username, password, email } = req.body;
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({
-          username,
-          password: hashedPassword,
-          email
+    // Check for missing fields
+    if (!username || !password || !email) {
+      return res.status(400).json({ message: 'Username, password, and email are required' });
+    }
+
+    // Enforce strong password policy
+    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!strongPasswordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.'
       });
+    }
 
-      // Save the new user document
-      const savedUser = await newUser.save();
+    // Check if username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }]
+    });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Username or email already exists' });
+    }
 
-      // Create initial documents for the new user
-      const newThresholds = new Thresholds({
-          userId: savedUser._id,
-          temperature: 30,
-          humidity: 70,
-          ammonia: 10
-      });
-      await newThresholds.save();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      email
+    });
 
-      const newControls = new Controls({
-          userId: savedUser._id,
-          fanStatus: false,
-          fanAutoMode: true,
-          manualOverrideEndTimestamp: null
-      });
-      await newControls.save();
+    // Save the new user document
+    const savedUser = await newUser.save();
 
-      // Create an initial welcome alert
-      const newAlert = new Alert({
-          userId: savedUser._id,
-          type: 'Welcome',
-          message: 'Welcome to your Farm App! Your account is ready.',
-          severity: 'info'
-      });
-      await newAlert.save();
+    // Create initial documents for the new user
+    const newThresholds = new Thresholds({
+      userId: savedUser._id,
+      temperature: 30,
+      humidity: 70,
+      ammonia: 10
+    });
+    await newThresholds.save();
 
-      // Respond with success message and a token
-      const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
-          expiresIn: '1h',
-      });
+    const newControls = new Controls({
+      userId: savedUser._id,
+      fanStatus: false,
+      fanAutoMode: true,
+      manualOverrideEndTimestamp: null
+    });
+    await newControls.save();
 
-      res.status(201).json({
-          message: 'User created successfully',
-          token,
-          user: { id: savedUser._id, username: savedUser.username, email: savedUser.email },
-      });
+    // Create an initial welcome alert
+    const newAlert = new Alert({
+      userId: savedUser._id,
+      type: 'Welcome',
+      message: 'Welcome to your Farm App! Your account is ready.',
+      severity: 'info'
+    });
+    await newAlert.save();
+
+    // Respond with success message and a token
+    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: { id: savedUser._id, username: savedUser.username, email: savedUser.email },
+    });
 
   } catch (error) {
-      if (error.code === 11000) {
-          return res.status(400).json({ message: 'Username or email already exists' });
-      }
-      res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 
 exports.signin = async (req, res) => {
   try {
-    // Expect a single field that can be either username or email
     const { usernameOrEmail, password } = req.body;
 
-    // Try to find the user by email first, then by username
+    // Try to find the user by email or username
     const user = await User.findOne({
       $or: [{ email: usernameOrEmail }, { username: usernameOrEmail }]
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      // User does not exist
+      return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Incorrect password' });
     }
 
-    // Create a JWT token upon successful sign-in
+    // Sign-in successful
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ message: 'Signed in successfully', token });
+    res.status(200).json({ message: 'Signed in successfully', token, user: { id: user._id, email: user.email } });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error during signin', error: error.message });
+    // Any other server errors
+    res.status(500).json({ message: 'Server error during sign-in', error: error.message });
   }
 };
 
