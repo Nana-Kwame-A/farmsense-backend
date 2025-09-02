@@ -9,7 +9,7 @@ const deviceController = require('../controllers/deviceController');
 // The receiveSensorData route allows the device to send sensor readings (temperature, humidity, NH3, and timestamp)
 // Each route is handled by a corresponding controller function that processes the request and returns a response.
 // The deviceController contains the logic for handling these requests, including database interactions and response formatting.
-router.get('/connection-status', deviceController.getConnectionStatus);
-router.post('/sensor-data', deviceController.receiveSensorData);
+router.get('/:userId/connection-status', deviceController.getConnectionStatus);
+router.post('/:userId/sensor-data', deviceController.receiveSensorData);
 
 module.exports = router;
