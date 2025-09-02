@@ -4,28 +4,28 @@ const Alert = require('../models/Alerts');
 
 const fetch = require("node-fetch");
 
-async function sendPushNotification(expoPushToken, title, body) {
-    if (!expoPushToken) return;
-    try {
-        await fetch("https://exp.host/--/api/v2/push/send", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Accept-encoding": "gzip, deflate",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                to: expoPushToken,
-                sound: "default",
-                title,
-                body,
-                data: { type: "alert" },
-            }),
-        });
-    } catch (err) {
-        console.error("Error sending push notification:", err);
-    }
-}
+// async function sendPushNotification(expoPushToken, title, body) {
+//     if (!expoPushToken) return;
+//     try {
+//         await fetch("https://exp.host/--/api/v2/push/send", {
+//             method: "POST",
+//             headers: {
+//                 Accept: "application/json",
+//                 "Accept-encoding": "gzip, deflate",
+//                 "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify({
+//                 to: expoPushToken,
+//                 sound: "default",
+//                 title,
+//                 body,
+//                 data: { type: "alert" },
+//             }),
+//         });
+//     } catch (err) {
+//         console.error("Error sending push notification:", err);
+//     }
+// }
 
 // add a new alert for a user
 exports.addAlert = async (req, res) => {
