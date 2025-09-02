@@ -3,7 +3,8 @@ const SensorData = require('../models/SensorData');
 
 exports.getConnectionStatus = async (req, res) => {
   try {
-    const latestData = await SensorData.findOne().sort({ timestamp: -1 });
+    const {userId} = req.params;
+    const latestData = await SensorData.findOne({userId}).sort({ timestamp: -1 });
     if (!latestData) {
       return res.status(200).json({ isConnected: false });
     }
@@ -21,8 +22,8 @@ exports.getConnectionStatus = async (req, res) => {
 
 exports.receiveSensorData = async (req, res) => {
   try {
-    const { temperature, humidity, nh3, timestamp } = req.body;
-    const newSensorData = new SensorData({ temperature, humidity, nh3, timestamp });
+    const { temperature, humidity, nh3, timestamp, userId } = req.body;
+    const newSensorData = new SensorData({ temperature, humidity, nh3, timestamp, userId });
     await newSensorData.save();
     res.status(201).json({ message: 'Sensor data saved successfully' });
   } catch (error) {
