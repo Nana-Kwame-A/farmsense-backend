@@ -1,5 +1,7 @@
 // src/controllers/deviceController.js
 const SensorData = require('../models/SensorData');
+const User = require('../models/User');
+
 
 exports.getConnectionStatus = async (req, res) => {
   try {
