@@ -5,8 +5,16 @@ const User = require('../models/User');
 
 exports.getConnectionStatus = async (req, res) => {
   try {
-    const {userId} = req.params;
-    const latestData = await SensorData.findOne({userId}).sort({ timestamp: -1 });
+    const { userId } = req.params;
+
+    // ✅ if userId is missing
+    if (!userId) {
+      return res.status(400).json({ message: "UserId required" });
+    }
+
+    const latestData = await SensorData.findOne({ userId }).sort({ timestamp: -1 });
+
+    // ✅ if no sensor data exists for this user
     if (!latestData) {
       return res.status(200).json({ isConnected: false });
     }
@@ -16,9 +24,10 @@ exports.getConnectionStatus = async (req, res) => {
     const fiveMinutes = 5 * 60 * 1000;
     const isConnected = (now.getTime() - lastReadingTime.getTime()) < fiveMinutes;
 
-    res.status(200).json({ isConnected });
+    return res.status(200).json({ isConnected });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("getConnectionStatus error:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
