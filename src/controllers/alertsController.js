@@ -2,7 +2,7 @@
 const User = require('../models/User');
 const Alert = require('../models/Alerts');
 
-const fetch = require("node-fetch");
+// const fetch = require("node-fetch");
 
 // async function sendPushNotification(expoPushToken, title, body) {
 //     if (!expoPushToken) return;
