@@ -11,11 +11,16 @@ exports.getLatestSensorData = async (req, res) => {
       timestamp: -1,
     });
 
-    if (!latestData) {
-      return res
-        .status(404)
-        .json({ message: "No sensor data found for this user" });
+    if (!latest) {
+      return res.json({
+        temperature: null,
+        humidity: null,
+        nh3: null,
+        timestamp: null,
+      });
     }
+
+    return res.json(latest)
 
     res.status(200).json(latestData);
   } catch (error) {
