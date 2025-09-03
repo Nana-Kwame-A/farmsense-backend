@@ -10,6 +10,10 @@ const alertSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    value: {
+        type: mongoose.Schema.Types.Mixed,
+        required: true
+    },
     message: {
         type: String,
         required: true

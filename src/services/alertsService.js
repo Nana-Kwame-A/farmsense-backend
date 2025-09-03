@@ -17,7 +17,7 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
       timestamp: Date.now(),
       type: "Temperature",
       value: temperature,
-      message: `Temperature exceeded: ${temperature}°C`,
+      message: `Temperature exceeded threshold`,
       severity: "warning",
     });
 
@@ -45,7 +45,7 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
       timestamp: Date.now(),
       type: "Humidity",
       value: humidity,
-      message: `Humidity exceeded: ${humidity}%`,
+      message: `Humidity exceeded threshold`,
       severity: "warning",
     });
   }
@@ -57,7 +57,7 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
       timestamp: Date.now(),
       type: "Ammonia",
       value: nh3,
-      message: `Ammonia exceeded safe level: ${nh3} ppm`,
+      message: `Ammonia exceeded safe level`,
       severity: "danger",
     });
 
