@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  role: { // <-- ADD THIS FIELD
+  role: { 
     type: String,
     enum: ['user', 'admin'], // Optional: Restrict possible values
     default: 'user',

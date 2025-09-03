@@ -2,6 +2,8 @@
 const Thresholds = require("../models/Thresholds");
 const Controls = require("../models/Controls");
 const Alert = require("../models/Alerts");
+const { sendPushNotification } = require("./pushService");
+const User = require("../models/User");
 
 async function checkAndHandleThresholds(userId, sensorData, io) {
   const thresholds = await Thresholds.findOne({ userId });
@@ -82,6 +84,13 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
   if (alerts.length > 0) {
     await Alert.insertMany(alerts);
     io.emit("new-alerts", { userId, alerts });
+
+    const user = await User.findById(userId);
+    if (user && user.expoPushToken) {
+      for (const alert of alerts) {
+        await sendPushNotification(user.expoPushToken, alert.message);
+      }
+    }
   }
 }
 
