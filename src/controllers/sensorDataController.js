@@ -1,8 +1,6 @@
 // src/controllers/sensorDataController.js
 const SensorData = require("../models/SensorData");
 const User = require("../models/User");
-const Threshods = require("../models/Thresholds");
-const Alert = require("../models/Alert");
 const { checkAndHandleThresholds } = require("../services/alertsService");
 
 // Get the latest sensor data for a user
