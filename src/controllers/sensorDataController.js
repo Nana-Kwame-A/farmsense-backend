@@ -40,21 +40,38 @@ exports.addSensorData = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const newSensorData = new SensorData({
-      temperature,
-      humidity,
-      nh3,
-      userId,
-    });
-    await newSensorData.save();
+    // const newSensorData = new SensorData({
+    //   temperature,
+    //   humidity,
+    //   nh3,
+    //   userId,
+    // });
+    // await newSensorData.save();
+
+    const data = await SensorData.findOneAndUpdate(
+      { userId },
+      { temperature, humidity, nh3, timestamp },
+      { new: true, upsert: true } // create if doesn't exist
+    );
+
+    const newSensorData = data;
 
     // After saving, emit the new data to all connected clients
     req.io.emit("new-sensor-data", newSensorData);
 
     //Threshold check + handle fan control + create alerts
-    await checkAndHandleThresholds(userId, { temperature, humidity, nh3 }, req.io);
+    await checkAndHandleThresholds(
+      userId,
+      { temperature, humidity, nh3 },
+      req.io
+    );
 
-    
+    res
+      .status(200)
+      .json({
+        message: "Sensor data updated successfully",
+        data: newSensorData,
+      });
     res
       .status(201)
       .json({ message: "Sensor data added successfully", data: newSensorData });
