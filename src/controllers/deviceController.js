@@ -4,7 +4,8 @@ const User = require("../models/User");
 
 exports.heartbeat = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.params;
+    
     if (!userId) {
       return res.status(400).json({ message: "UserId is required" });
     }
