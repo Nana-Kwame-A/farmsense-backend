@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 async function sendPushNotification(expoPushToken, message) {
   try {
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
