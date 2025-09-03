@@ -1,6 +1,9 @@
 // src/controllers/sensorDataController.js
 const SensorData = require("../models/SensorData");
 const User = require("../models/User");
+const Threshods = require("../models/Thresholds");
+const Alert = require("../models/Alert");
+const { checkAndHandleThresholds } = require("../services/alertsService");
 
 // Get the latest sensor data for a user
 exports.getLatestSensorData = async (req, res) => {
@@ -20,7 +23,7 @@ exports.getLatestSensorData = async (req, res) => {
       });
     }
 
-    return res.json(latest)
+    return res.json(latest);
 
     res.status(200).json(latestData);
   } catch (error) {
@@ -50,6 +53,10 @@ exports.addSensorData = async (req, res) => {
     // After saving, emit the new data to all connected clients
     req.io.emit("new-sensor-data", newSensorData);
 
+    //Threshold check + handle fan control + create alerts
+    await checkAndHandleThresholds(userId, { temperature, humidity, nh3 }, req.io);
+
+    
     res
       .status(201)
       .json({ message: "Sensor data added successfully", data: newSensorData });

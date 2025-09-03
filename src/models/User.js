@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  lastSeen: {
+    type: Date,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);
