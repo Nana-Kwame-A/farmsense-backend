@@ -16,7 +16,7 @@ exports.heartbeat = async (req, res) => {
   }
 };
 
-exports.getConnectionStatus = async (req, res) => {
+exports.heartbeatStatus = async (req, res) => {
   try {
     const { userId } = req.params;
 
