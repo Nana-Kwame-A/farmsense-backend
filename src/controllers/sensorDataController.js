@@ -12,7 +12,7 @@ exports.getLatestSensorData = async (req, res) => {
       timestamp: -1,
     });
 
-    if (!latest) {
+    if (!latestData) {
       return res.json({
         temperature: null,
         humidity: null,
@@ -21,7 +21,7 @@ exports.getLatestSensorData = async (req, res) => {
       });
     }
 
-    return res.json(latest);
+    return res.json(latestData);
 
     res.status(200).json(latestData);
   } catch (error) {
@@ -50,7 +50,7 @@ exports.addSensorData = async (req, res) => {
 
     const data = await SensorData.findOneAndUpdate(
       { userId },
-      { temperature, humidity, nh3, timestamp },
+      { temperature, humidity, nh3, timestamp: Date.now() },
       { new: true, upsert: true } // create if doesn't exist
     );
 
@@ -72,9 +72,6 @@ exports.addSensorData = async (req, res) => {
         message: "Sensor data updated successfully",
         data: newSensorData,
       });
-    res
-      .status(201)
-      .json({ message: "Sensor data added successfully", data: newSensorData });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
