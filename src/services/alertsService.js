@@ -82,14 +82,27 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
 
   // Save & emit alerts
   if (alerts.length > 0) {
-    await Alert.insertMany(alerts);
-    io.emit("new-alerts", { userId, alerts });
+    try {
+      await Alert.insertMany(alerts);
+    } catch (err) {
+      console.error("Failed to save alerts:", err);
+    }
 
-    const user = await User.findById(userId);
-    if (user && user.expoPushToken) {
-      for (const alert of alerts) {
-        await sendPushNotification(user.expoPushToken, alert.message);
+    try {
+      io.to(userId).emit("new-alerts", { userId, alerts });
+    } catch (err) {
+      console.error("Failed to emit alerts:", err);
+    }
+
+    try {
+      const user = await User.findById(userId);
+      if (user && user.expoPushToken) {
+        for (const alert of alerts) {
+          await sendPushNotification(user.expoPushToken, alert.message);
+        }
       }
+    } catch (err) {
+      console.error("Failed to send push notifications:", err);
     }
   }
 }

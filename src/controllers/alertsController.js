@@ -21,6 +21,7 @@ exports.addAlert = async (req, res) => {
         io.to(userId).emit("new-alert", newAlert);
         res.status(201).json({ message: 'Alert added successfully', data: newAlert });
     } catch (error) {
+        console.error("Add Alert error:", error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
