@@ -47,10 +47,18 @@ app.use((req, res, next) => {
 });
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('A client connected:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('A client disconnected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("A client connected:", socket.id);
+
+  // Get userId from query when they connect
+  const { userId } = socket.handshake.query;
+  if (userId) {
+    socket.join(userId); // put this socket in a room named by their userId
+    console.log(`User ${userId} joined room`);
+  }
+
+  socket.on("disconnect", () => {
+    console.log("A client disconnected:", socket.id);
   });
 });
 

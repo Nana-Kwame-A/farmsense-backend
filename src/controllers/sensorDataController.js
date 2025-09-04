@@ -57,7 +57,7 @@ exports.addSensorData = async (req, res) => {
     const newSensorData = data;
 
     // After saving, emit the new data to all connected clients
-    req.io.emit("new-sensor-data", newSensorData);
+    req.io.to(userId).emit("new-sensor-data", newSensorData);
 
     //Threshold check + handle fan control + create alerts
     await checkAndHandleThresholds(
