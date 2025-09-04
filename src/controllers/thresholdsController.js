@@ -25,7 +25,7 @@ exports.updateThresholds = async (req, res) => {
             req.body,
             { new: true, upsert: true } // upsert creates a new document if none exists
         );
-        io.to(userId).emit("thresholds-updated", updatedThresholds);
+        req.io.to(userId).emit("thresholds-updated", updatedThresholds);
         res.status(200).json(updatedThresholds);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
