@@ -81,3 +81,63 @@ exports.getUserDashboard = async (req, res) => {
     res.status(500).json({ message: 'Server error getting dashboard data', error: error.message });
   }
 };
+// Check if a device is registered for a user
+exports.checkDeviceRegistration = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { deviceId } = req.query;
+
+    const device = await Device.findOne({ userId, deviceId });
+    res.status(200).json({ isRegistered: !!device });
+  } catch (error) {
+    res.status(500).json({ message: "Server error checking device registration", error: error.message });
+  }
+};
+
+// Get all devices for a user
+exports.getUserDevices = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const devices = await Device.find({ userId });
+    res.status(200).json(devices);
+  } catch (error) {
+    res.status(500).json({ message: "Server error getting user devices", error: error.message });
+  }
+};
+
+// Link a device to a user
+exports.linkDevice = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { deviceId } = req.body;
+
+    let device = await Device.findOne({ deviceId });
+    if (device) {
+      return res.status(400).json({ message: "Device already linked" });
+    }
+
+    device = new Device({ userId, deviceId });
+    await device.save();
+
+    res.status(201).json({ message: "Device linked successfully", device });
+  } catch (error) {
+    res.status(500).json({ message: "Server error linking device", error: error.message });
+  }
+};
+
+// Unlink a device from a user
+exports.unlinkDevice = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { deviceId } = req.body;
+
+    const device = await Device.findOneAndDelete({ userId, deviceId });
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    res.status(200).json({ message: "Device unlinked successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error unlinking device", error: error.message });
+  }
+};
