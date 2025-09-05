@@ -1,16 +1,22 @@
 // src/controllers/deviceController.js
 const SensorData = require("../models/SensorData");
 const User = require("../models/User");
+const Device = require("../models/Device");
 
 exports.heartbeat = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { deviceId } = req.params;
     
-    if (!userId) {
-      return res.status(400).json({ message: "UserId is required" });
+    if (!deviceId) {
+      return res.status(400).json({ message: "deviceId is required" });
     }
 
-    await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    await User.findByIdAndUpdate(device.userId, { lastSeen: new Date() });
     res.status(200).json({ message: "Heartbeat received" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -19,14 +25,18 @@ exports.heartbeat = async (req, res) => {
 
 exports.heartbeatStatus = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { deviceId } = req.params;
 
-    // ✅ if userId is missing
-    if (!userId) {
-      return res.status(400).json({ message: "UserId required" });
+    if (!deviceId) {
+      return res.status(400).json({ message: "deviceId required" });
     }
 
-    const user = await User.findById(userId);
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    const user = await User.findById(device.userId);
     if (!user || !user.lastSeen) {
       return res.status(200).json({ isConnected: false });
     }
@@ -46,7 +56,16 @@ exports.heartbeatStatus = async (req, res) => {
 
 exports.receiveSensorData = async (req, res) => {
   try {
-    const { temperature, humidity, nh3, timestamp, userId } = req.body;
+    const { temperature, humidity, nh3, timestamp, deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({ message: "deviceId is required" });
+    }
+
+    const device = await Device.findOne({ deviceId });
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
 
     // if timestamp is missing, use server time
     const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
@@ -56,7 +75,7 @@ exports.receiveSensorData = async (req, res) => {
       humidity,
       nh3,
       timestamp: eventTimestamp,
-      userId,
+      userId: device.userId,
     });
     await newSensorData.save();
     res.status(201).json({ message: "Sensor data saved successfully" });
@@ -67,5 +86,23 @@ exports.receiveSensorData = async (req, res) => {
         message: "Server error saving sensor data",
         error: error.message,
       });
+  }
+};
+
+exports.registerDevice = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { deviceId } = req.body;
+
+    if (!deviceId) return res.status(400).json({ message: "deviceId is required" });
+
+    const existing = await Device.findOne({ deviceId });
+    if (existing) return res.status(400).json({ message: "Device already registered" });
+
+    const device = await Device.create({ userId, deviceId });
+    res.status(201).json(device);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

@@ -32,6 +32,10 @@ const SensorDataSchema = new Schema({
     ref: 'User', // Reference to the User model
     required: true,
   },
+  deviceId: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model('SensorData', SensorDataSchema);

@@ -20,76 +20,6 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-exports.checkDeviceRegistration = async (req, res) => {
-  try {
-    const { userId } = req.params; 
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json({ isRegistered: user.isDeviceRegistered });
-  } catch (error) {
-    res.status(500).json({ message: 'Error checking device registration', error: error.message });
-  }
-};
-
-// Link a device to a user
-exports.linkDevice = async (req, res) => {
-  try {
-    const { userId } = req.params; // Changed from firebaseUid
-    const user = await User.findOneAndUpdate(
-      { _id: userId }, // Use _id to find by MongoDB's ID
-      { isDeviceRegistered: true },
-      { new: true, upsert: true }
-    );
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json({ message: 'Device linked successfully', user });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error during linking', error: error.message });
-  }
-};
-
-
-// You'll need to implement these if they don't exist:
-exports.unlinkDevice = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findOneAndUpdate(
-      { _id: userId },
-      { isDeviceRegistered: false },
-      { new: true }
-    );
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json({ message: 'Device unlinked successfully', user });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error during unlinking', error: error.message });
-  }
-};
-
-exports.getUserDevices = async (req, res) => {
-  // This function would typically return details about devices linked to a user.
-  // For now, it might just return the isDeviceRegistered status or a list of devices.
-  // Since you only have a single `isDeviceRegistered` flag per user in your User model,
-  // this might just return that, or if you plan for multiple devices,
-  // your User model would need a `devices: []` array.
-  try {
-    const { userId } = req.params;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    // Assuming isDeviceRegistered is the main "device" info for now
-    res.status(200).json({ isDeviceRegistered: user.isDeviceRegistered, message: 'This endpoint currently only reflects device registration status.' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error getting user devices', error: error.message });
-  }
-};
-
 // Get all users (for admin purposes)
 // This function is useful for admin panels or user management interfaces.
 // It retrieves all users without sensitive information like passwords.
@@ -119,8 +49,8 @@ exports.registerUser = async (req, res) => {
   };
 
 
-  // i might delete this
-  // Get all dashboard data for a user
+// Get all dashboard data for a user (refactored for deviceId-based system)
+const Device = require('../models/Device');
 exports.getUserDashboard = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -130,10 +60,15 @@ exports.getUserDashboard = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const sensorData = await SensorData.find({ userId });
-    const thresholds = await Thresholds.findOne({ userId });
-    const controls = await Controls.findOne({ userId });
-    const alerts = await Alert.find({ userId }).sort({ timestamp: -1 });
+    // Fetch all devices linked to the user
+    const devices = await Device.find({ userId });
+    const deviceIds = devices.map(device => device.deviceId || device._id);
+
+    // Fetch all sensor data, thresholds, controls, and alerts for the user's devices
+    const sensorData = await SensorData.find({ deviceId: { $in: deviceIds } });
+    const thresholds = await Thresholds.find({ deviceId: { $in: deviceIds } });
+    const controls = await Controls.find({ deviceId: { $in: deviceIds } });
+    const alerts = await Alert.find({ deviceId: { $in: deviceIds } }).sort({ timestamp: -1 });
 
     res.status(200).json({
       user,

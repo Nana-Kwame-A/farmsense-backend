@@ -2,13 +2,23 @@
 const SensorData = require("../models/SensorData");
 const User = require("../models/User");
 const { checkAndHandleThresholds } = require("../services/alertsService");
+const Device = require("../models/Device");
 
-// Get the latest sensor data for a user
+// Get the latest sensor data for a user or device
 exports.getLatestSensorData = async (req, res) => {
   try {
-    const { userId } = req.params; // Get userId from the URL parameter
+    const { userId, deviceId } = req.params; // Get userId or deviceId from the URL parameter
 
-    const latestData = await SensorData.findOne({ userId }).sort({
+    let query = {};
+    if (deviceId) {
+      query.deviceId = deviceId;
+    } else if (userId) {
+      query.userId = userId;
+    } else {
+      return res.status(400).json({ message: "Either userId or deviceId must be provided" });
+    }
+
+    const latestData = await SensorData.findOne(query).sort({
       timestamp: -1,
     });
 
@@ -29,35 +39,29 @@ exports.getLatestSensorData = async (req, res) => {
   }
 };
 
-// Add new sensor data for a user
-// This function assumes that the request body contains userId and sensor data fields
+// Add new sensor data for a device
+// This function assumes that the request body contains deviceId and sensor data fields
 exports.addSensorData = async (req, res) => {
   try {
-    const { temperature, humidity, nh3, userId } = req.body;
+    const { temperature, humidity, nh3, deviceId } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const device = await Device.findById(deviceId);
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
     }
 
-    // const newSensorData = new SensorData({
-    //   temperature,
-    //   humidity,
-    //   nh3,
-    //   userId,
-    // });
-    // await newSensorData.save();
+    const userId = device.userId;
 
     const data = await SensorData.findOneAndUpdate(
-      { userId },
-      { temperature, humidity, nh3, timestamp: Date.now() },
+      { deviceId },
+      { temperature, humidity, nh3, userId, deviceId, timestamp: Date.now() },
       { new: true, upsert: true } // create if doesn't exist
     );
 
     const newSensorData = data;
 
     // After saving, emit the new data to all connected clients
-    req.io.to(userId).emit("new-sensor-data", newSensorData);
+    req.io.to(userId.toString()).emit("new-sensor-data", newSensorData);
 
     //Threshold check + handle fan control + create alerts
     await checkAndHandleThresholds(
