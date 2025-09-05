@@ -85,9 +85,8 @@ exports.getUserDashboard = async (req, res) => {
 exports.checkDeviceRegistration = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { deviceId } = req.query;
 
-    const device = await Device.findOne({ userId, deviceId });
+    const device = await Device.findOne({ userId });
     res.status(200).json({ isRegistered: !!device });
   } catch (error) {
     res.status(500).json({ message: "Server error checking device registration", error: error.message });
