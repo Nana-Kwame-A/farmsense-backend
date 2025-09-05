@@ -104,15 +104,19 @@ exports.getUserDevices = async (req, res) => {
   }
 };
 
-// Link a device to a user
+// Link a device to a user (idempotent)
 exports.linkDevice = async (req, res) => {
   try {
     const { userId } = req.params;
     const { deviceId } = req.body;
 
     let device = await Device.findOne({ deviceId });
+
     if (device) {
-      return res.status(400).json({ message: "Device already linked" });
+      if (device.userId.toString() === userId) {
+        return res.status(200).json({ message: "Device already linked to this user", device });
+      }
+      return res.status(400).json({ message: "Device already linked to another user" });
     }
 
     device = new Device({ userId, deviceId });
