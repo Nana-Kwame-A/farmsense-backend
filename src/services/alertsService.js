@@ -89,7 +89,7 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
     }
 
     try {
-      req.io.to(userId).emit("new-alerts", { userId, alerts });
+      io.to(userId).emit("new-alerts", { userId, alerts });
     } catch (err) {
       console.error("Failed to emit alerts:", err);
     }
