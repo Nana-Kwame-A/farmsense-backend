@@ -12,5 +12,5 @@ const deviceController = require('../controllers/deviceController');
 // src/routes/deviceRoutes.js
 router.post('/:hardwareId/heartbeat', deviceController.heartbeat);
 router.get('/:hardwareId/heartbeat-status', deviceController.heartbeatStatus);
-router.post('/:hardwareId/sensor-data', deviceController.receiveSensorData);
+// router.post('/:hardwareId/sensor-data', deviceController.receiveSensorData);
 module.exports = router;
