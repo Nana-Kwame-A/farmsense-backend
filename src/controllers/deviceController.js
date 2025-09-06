@@ -2,6 +2,8 @@
 const SensorData = require("../models/SensorData");
 const User = require("../models/User");
 const Device = require("../models/Device");
+const { checkAndHandleThresholds } = require("../services/alertsService");
+
 
 exports.heartbeat = async (req, res) => {
   const { hardwareId } = req.params;
@@ -77,11 +79,11 @@ exports.receiveSensorData = async (req, res) => {
     );
 
     // After saving, emit the new data to all connected clients
-        req.io.to(userId.toString()).emit("new-sensor-data", updatedSensorData);
+        req.io.to(device.userId.toString()).emit("new-sensor-data", updatedSensorData);
     
         //Threshold check + handle fan control + create alerts
         await checkAndHandleThresholds(
-          userId,
+          device.userId,
           { temperature, humidity, nh3 },
           req.io
         );
