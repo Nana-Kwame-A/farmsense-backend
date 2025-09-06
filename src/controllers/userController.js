@@ -119,7 +119,7 @@ exports.linkDevice = async (req, res) => {
       return res.status(400).json({ message: "Device already linked to another user" });
     }
 
-    device = new Device({ userId, hardwareId: deviceId });
+    device = new Device({ userId, hardwareId });
     await device.save();
 
     res.status(201).json({ message: "Device linked successfully", device });
