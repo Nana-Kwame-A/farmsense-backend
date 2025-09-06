@@ -55,6 +55,14 @@ exports.addSensorData = async (req, res) => {
     }
 
     const userId = device.userId;
+    const deviceId = device._id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Device is not linked to any user" });
+    }
+
+    // Upsert sensor data for the device
+    // If data for this device already exists, update it; otherwise, create a new entry
 
     const data = await SensorData.findOneAndUpdate(
       { deviceId },
