@@ -41,57 +41,49 @@ exports.getLatestSensorData = async (req, res) => {
 
 // Add new sensor data for a device
 // This function assumes that the request body contains deviceId and sensor data fields
-exports.addSensorData = async (req, res) => {
-  try {
-    const { temperature, humidity, nh3, hardwareId } = req.body;
+// exports.addSensorData = async (req, res) => {
+//   try {
+//     const { temperature, humidity, nh3, hardwareId } = req.body;
 
-    if (!hardwareId) {
-      return res.status(400).json({ message: "hardwareId is required"});
-    }
+//     if (!hardwareId) {
+//       return res.status(400).json({ message: "hardwareId is required"});
+//     }
 
-    const device = await Device.findOne({hardwareId});
-    if (!device) {
-      return res.status(404).json({ message: "Device not found" });
-    }
+//     const device = await Device.findOne({hardwareId});
+//     if (!device) {
+//       return res.status(404).json({ message: "Device not found" });
+//     }
 
-    const userId = device.userId;
-    const deviceId = device._id;
+//     const userId = device.userId;
 
-    if (!userId) {
-      return res.status(400).json({ message: "Device is not linked to any user" });
-    }
+//     const data = await SensorData.findOneAndUpdate(
+//       { deviceId },
+//       { temperature, humidity, nh3, userId, deviceId, timestamp: Date.now() },
+//       { new: true, upsert: true } // create if doesn't exist
+//     );
 
-    // Upsert sensor data for the device
-    // If data for this device already exists, update it; otherwise, create a new entry
+//     const newSensorData = data;
 
-    const data = await SensorData.findOneAndUpdate(
-      { deviceId },
-      { temperature, humidity, nh3, userId, deviceId, timestamp: Date.now() },
-      { new: true, upsert: true } // create if doesn't exist
-    );
+//     // After saving, emit the new data to all connected clients
+//     req.io.to(userId.toString()).emit("new-sensor-data", newSensorData);
 
-    const newSensorData = data;
+//     //Threshold check + handle fan control + create alerts
+//     await checkAndHandleThresholds(
+//       userId,
+//       { temperature, humidity, nh3 },
+//       req.io
+//     );
 
-    // After saving, emit the new data to all connected clients
-    req.io.to(userId.toString()).emit("new-sensor-data", newSensorData);
-
-    //Threshold check + handle fan control + create alerts
-    await checkAndHandleThresholds(
-      userId,
-      { temperature, humidity, nh3 },
-      req.io
-    );
-
-    res
-      .status(200)
-      .json({
-        message: "Sensor data updated successfully",
-        data: newSensorData,
-      });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+//     res
+//       .status(200)
+//       .json({
+//         message: "Sensor data updated successfully",
+//         data: newSensorData,
+//       });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 
 // Get all sensor data for a user
 exports.getAllSensorData = async (req, res) => {

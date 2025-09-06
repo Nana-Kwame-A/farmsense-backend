@@ -9,7 +9,7 @@ const sensorDataController = require('../controllers/sensorDataController');
 // The getLatestSensorData route retrieves the most recent sensor data for a user.
 // The getAllSensorData route retrieves all sensor data for a user, which can be useful for
 // historical analysis or monitoring trends over time.
-router.patch('/add', sensorDataController.addSensorData);
+// router.patch('/add', sensorDataController.addSensorData);
 router.get('/:userId/latest', sensorDataController.getLatestSensorData);
 router.get('/:userId/all', sensorDataController.getAllSensorData);
 

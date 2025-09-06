@@ -27,11 +27,11 @@ const SensorDataSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  // userId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "User", // Reference to the User model
-  //   required: true,
-  // },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Reference to the User model
+    required: true,
+  },
   deviceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Device",
