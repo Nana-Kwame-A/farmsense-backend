@@ -35,7 +35,7 @@ exports.heartbeatStatus = async (req, res) => {
 
     const now = new Date();
     const isConnected =
-    // 2 min timeout for demo purposes, adjust as needed
+      // 2 min timeout for demo purposes, adjust as needed
       device.lastSeen && now - device.lastSeen < 2 * 60 * 1000;
 
     res.json({ isConnected, lastSeen: device.lastSeen });
@@ -58,6 +58,12 @@ exports.receiveSensorData = async (req, res) => {
       return res.status(404).json({ message: "Device not found" });
     }
 
+    if (!device.userId) {
+      return res
+        .status(400)
+        .json({ message: "Device is not linked to any user" });
+    }
+
     // if timestamp is missing, use server time
     const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
 
@@ -74,9 +80,19 @@ exports.receiveSensorData = async (req, res) => {
       { new: true, upsert: true } // ✅ update or insert one doc
     );
 
-    res
-      .status(200)
-      .json({ message: "Sensor data updated successfully", data: updatedSensorData });
+    console.log("Saving sensor data:", {
+      temperature,
+      humidity,
+      nh3,
+      timestamp: eventTimestamp,
+      userId: device.userId,
+      deviceId: device._id,
+    });
+
+    res.status(200).json({
+      message: "Sensor data updated successfully",
+      data: updatedSensorData,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Server error saving sensor data",
@@ -90,10 +106,12 @@ exports.registerDevice = async (req, res) => {
     const { userId } = req.params;
     const { hardwareId } = req.body;
 
-    if (!hardwareId) return res.status(400).json({ message: "hardwareId is required" });
+    if (!hardwareId)
+      return res.status(400).json({ message: "hardwareId is required" });
 
     const existing = await Device.findOne({ hardwareId });
-    if (existing) return res.status(400).json({ message: "Device already registered" });
+    if (existing)
+      return res.status(400).json({ message: "Device already registered" });
 
     const device = await Device.create({ userId, hardwareId });
     res.status(201).json(device);
