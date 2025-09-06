@@ -1,5 +1,5 @@
 // src/models/SensorData.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 // Define the SensorData schema
@@ -27,15 +27,16 @@ const SensorDataSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
-    required: true,
-  },
+  // userId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "User", // Reference to the User model
+  //   required: true,
+  // },
   deviceId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Device",
     required: true,
   },
 });
 
-module.exports = mongoose.model('SensorData', SensorDataSchema);
+module.exports = mongoose.model("SensorData", SensorDataSchema);

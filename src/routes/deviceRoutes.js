@@ -10,8 +10,7 @@ const deviceController = require('../controllers/deviceController');
 // Each route is handled by a corresponding controller function that processes the request and returns a response.
 // The deviceController contains the logic for handling these requests, including database interactions and response formatting.
 // src/routes/deviceRoutes.js
-router.post('/:deviceId/heartbeat', deviceController.heartbeat);
-router.get('/:deviceId/heartbeat-status', deviceController.heartbeatStatus);
-router.post('/:deviceId/sensor-data', deviceController.receiveSensorData);
-
+router.post('/:hardwareId/heartbeat', deviceController.heartbeat);
+router.get('/:hardwareId/heartbeat-status', deviceController.heartbeatStatus);
+router.post('/:hardwareId/sensor-data', deviceController.receiveSensorData);
 module.exports = router;

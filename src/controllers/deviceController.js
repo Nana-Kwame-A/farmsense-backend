@@ -4,12 +4,12 @@ const User = require("../models/User");
 const Device = require("../models/Device");
 
 exports.heartbeat = async (req, res) => {
-  const { deviceId } = req.params;
+  const { hardwareId } = req.params;
 
   try {
     const device = await Device.findOneAndUpdate(
-      { deviceId },
-      { lastSeen: new Date() },
+      { hardwareId },
+      { lastSeen: new Date(), isConnected: true },
       { new: true }
     );
 
@@ -25,10 +25,10 @@ exports.heartbeat = async (req, res) => {
 };
 
 exports.heartbeatStatus = async (req, res) => {
-  const { deviceId } = req.params;
+  const { hardwareId } = req.params;
 
   try {
-    const device = await Device.findOne({ deviceId });
+    const device = await Device.findOne({ hardwareId });
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
     }
@@ -47,13 +47,13 @@ exports.heartbeatStatus = async (req, res) => {
 
 exports.receiveSensorData = async (req, res) => {
   try {
-    const { temperature, humidity, nh3, timestamp, deviceId } = req.body;
+    const { temperature, humidity, nh3, timestamp, hardwareId } = req.body;
 
-    if (!deviceId) {
-      return res.status(400).json({ message: "deviceId is required" });
+    if (!hardwareId) {
+      return res.status(400).json({ message: "hardwareId is required" });
     }
 
-    const device = await Device.findOne({ deviceId });
+    const device = await Device.findOne({ hardwareId });
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
     }
@@ -61,36 +61,41 @@ exports.receiveSensorData = async (req, res) => {
     // if timestamp is missing, use server time
     const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
 
-    const newSensorData = new SensorData({
-      temperature,
-      humidity,
-      nh3,
-      timestamp: eventTimestamp,
-      userId: device.userId,
-    });
-    await newSensorData.save();
-    res.status(201).json({ message: "Sensor data saved successfully" });
-  } catch (error) {
+    const updatedSensorData = await SensorData.findOneAndUpdate(
+      { deviceId: device._id },
+      {
+        temperature,
+        humidity,
+        nh3,
+        timestamp: eventTimestamp,
+        userId: device.userId,
+        deviceId: device._id,
+      },
+      { new: true, upsert: true } // ✅ update or insert one doc
+    );
+
     res
-      .status(500)
-      .json({
-        message: "Server error saving sensor data",
-        error: error.message,
-      });
+      .status(200)
+      .json({ message: "Sensor data updated successfully", data: updatedSensorData });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error saving sensor data",
+      error: error.message,
+    });
   }
 };
 
 exports.registerDevice = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { deviceId } = req.body;
+    const { hardwareId } = req.body;
 
-    if (!deviceId) return res.status(400).json({ message: "deviceId is required" });
+    if (!hardwareId) return res.status(400).json({ message: "hardwareId is required" });
 
-    const existing = await Device.findOne({ deviceId });
+    const existing = await Device.findOne({ hardwareId });
     if (existing) return res.status(400).json({ message: "Device already registered" });
 
-    const device = await Device.create({ userId, deviceId });
+    const device = await Device.create({ userId, hardwareId });
     res.status(201).json(device);
   } catch (error) {
     console.error(error);

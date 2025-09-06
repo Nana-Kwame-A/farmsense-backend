@@ -1,5 +1,5 @@
 // src/models/User.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Define the User schema
 // This schema captures user information such as username, email, and password.
@@ -13,7 +13,7 @@ const mongoose = require('mongoose');
 // The schema can be extended in the future to include more user-related information
 // such as profile pictures, roles, or preferences.
 const userSchema = new mongoose.Schema({
-  username:{
+  username: {
     type: String,
     required: true,
     unique: true,
@@ -27,20 +27,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  role: { 
+  role: {
     type: String,
-    enum: ['user', 'admin'], // Optional: Restrict possible values
-    default: 'user',
+    enum: ["user", "admin"], // Optional: Restrict possible values
+    default: "user",
     required: true,
   },
   isDeviceRegistered: {
     type: Boolean,
     default: false,
   },
-  lastSeen: {
-    type: Date,
-    default: null,
-  },
+  devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }],
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);
