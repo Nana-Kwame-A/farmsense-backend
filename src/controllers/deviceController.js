@@ -67,7 +67,7 @@ exports.receiveSensorData = async (req, res) => {
     }
 
     // if timestamp is missing, use server time
-    const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
+    const eventTimestamp =  new Date();
 
     const updatedSensorData = await SensorData.findOneAndUpdate(
       { deviceId: device._id },
