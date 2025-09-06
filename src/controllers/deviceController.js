@@ -4,53 +4,44 @@ const User = require("../models/User");
 const Device = require("../models/Device");
 
 exports.heartbeat = async (req, res) => {
-  try {
-    const { deviceId } = req.params;
-    
-    if (!deviceId) {
-      return res.status(400).json({ message: "deviceId is required" });
-    }
+  const { deviceId } = req.params;
 
-    const device = await Device.findOne({ deviceId });
+  try {
+    const device = await Device.findOneAndUpdate(
+      { deviceId },
+      { lastSeen: new Date() },
+      { new: true }
+    );
+
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
     }
 
-    await User.findByIdAndUpdate(device.userId, { lastSeen: new Date() });
-    res.status(200).json({ message: "Heartbeat received" });
+    res.json({ message: "Heartbeat received", lastSeen: device.lastSeen });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Heartbeat error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.heartbeatStatus = async (req, res) => {
+  const { deviceId } = req.params;
+
   try {
-    const { deviceId } = req.params;
-
-    if (!deviceId) {
-      return res.status(400).json({ message: "deviceId required" });
-    }
-
     const device = await Device.findOne({ deviceId });
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
     }
 
-    const user = await User.findById(device.userId);
-    if (!user || !user.lastSeen) {
-      return res.status(200).json({ isConnected: false });
-    }
     const now = new Date();
-    const lastSeen = new Date(user.lastSeen).getTime();
+    const isConnected =
+    // 2 min timeout for demo purposes, adjust as needed
+      device.lastSeen && now - device.lastSeen < 2 * 60 * 1000;
 
-    const isConnected = now - lastSeen < 2 * 60 * 1000; // 2 minutes threshold
-
-    return res.status(200).json({ isConnected });
+    res.json({ isConnected, lastSeen: device.lastSeen });
   } catch (error) {
-    console.error("getConnectionStatus error:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    console.error("Heartbeat status error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
