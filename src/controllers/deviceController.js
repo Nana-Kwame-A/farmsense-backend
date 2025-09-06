@@ -67,6 +67,7 @@ exports.receiveSensorData = async (req, res) => {
     // if timestamp is missing, use server time
     const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
 
+    console.log("Before saving sensor data:", await SensorData.find({ deviceId: device._id }));
     const updatedSensorData = await SensorData.findOneAndUpdate(
       { deviceId: device._id },
       {
@@ -75,6 +76,7 @@ exports.receiveSensorData = async (req, res) => {
       { new: true, upsert: true } // ✅ update or insert one doc
     );
 
+    console.log("After update:", updatedSensorData)
     console.log("Saving sensor data:", {
       temperature,
       humidity,
