@@ -67,24 +67,24 @@ exports.receiveSensorData = async (req, res) => {
     // if timestamp is missing, use server time
     const eventTimestamp = timestamp ? new Date(timestamp * 1000) : new Date();
 
-    console.log("Before saving sensor data:", await SensorData.find({ deviceId: device._id }));
     const updatedSensorData = await SensorData.findOneAndUpdate(
       { deviceId: device._id },
       {
-        $set: { temperature, humidity, nh3, timestamp: eventTimestamp, userId: device.userId, deviceId: device._id },
+        $set: { temperature, humidity, nh3, timestamp: eventTimestamp },
+        $setOnInsert: { userId: device.userId, deviceId: device._id },
       },
       { new: true, upsert: true, setDefaultsOnInsert: true } // ✅ update or insert one doc
     );
 
-    console.log("After update:", updatedSensorData)
-    console.log("Saving sensor data:", {
-      temperature,
-      humidity,
-      nh3,
-      timestamp: eventTimestamp,
-      userId: device.userId,
-      deviceId: device._id,
-    });
+    // After saving, emit the new data to all connected clients
+        req.io.to(userId.toString()).emit("new-sensor-data", updatedSensorData);
+    
+        //Threshold check + handle fan control + create alerts
+        await checkAndHandleThresholds(
+          userId,
+          { temperature, humidity, nh3 },
+          req.io
+        );
 
     res.status(200).json({
       message: "Sensor data updated successfully",
