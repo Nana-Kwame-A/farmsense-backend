@@ -111,6 +111,14 @@ exports.linkDevice = async (req, res) => {
     const { userId } = req.params;
     const { hardwareId } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId format" });
+    }
+
+    if (!hardwareId) {
+      return res.status(400).json({ message: "Hardware ID is required" });
+    }
+
     let device = await Device.findOne({ hardwareId });
 
     if (device) {
@@ -120,13 +128,13 @@ exports.linkDevice = async (req, res) => {
       return res.status(400).json({ message: "Device already linked to another user" });
     }
 
-    device = new Device({ userId: new mongoose.Types.ObjectId(userId), hardwareId });
+    device = new Device({ userId, hardwareId });
     await device.save();
 
-    res.status(201).json({ message: "Device linked successfully", device });
+    return res.status(201).json({ message: "Device linked successfully", device });
   } catch (error) {
-    console.log("Error linking device:", error);
-    res.status(500).json({ message: "Server error linking device", error: error.message });
+    console.error("Error linking device:", error); // 👈 log full error
+    return res.status(500).json({ message: "Server error linking device", error: error.message });
   }
 };
 
