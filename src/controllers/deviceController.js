@@ -70,10 +70,10 @@ exports.receiveSensorData = async (req, res) => {
     // const eventTimestamp =  new Date();
 
     const updatedSensorData = await SensorData.findOneAndUpdate(
-      { deviceId: device._id },
+      { hardwareId: hardwareId},
       {
         $set: { temperature, humidity, nh3, timestamp: Date.now() },
-        $setOnInsert: { userId: device.userId, deviceId: device._id },
+        $setOnInsert: { userId: device.userId, hardwareId: hardwareId },
       },
       { new: true, upsert: true, setDefaultsOnInsert: true } // ✅ update or insert one doc
     );
