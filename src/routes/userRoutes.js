@@ -23,6 +23,7 @@ const userController = require("../controllers/userController");
 router.get("/:userId/dashboard", userController.getUserDashboard);
 router.get("/:userId/is-registered", userController.checkDeviceRegistration);
 router.get("/:userId/devices", userController.getUserDevices);
+router.patch("/:userId/push-token", userController.updatePushToken);
 router.post("/:userId/link-device", userController.linkDevice);
 router.post("/:userId/unlink-device", userController.unlinkDevice);
 

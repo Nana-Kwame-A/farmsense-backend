@@ -11,6 +11,15 @@ const { Schema } = mongoose;
 // The schema also includes validation to ensure that the required fields are present.
 // The timestamp defaults to the current date and time when a new document is created.
 const SensorDataSchema = new Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Reference to the User model
+    required: true,
+  },
+  hardwareId: {
+    type: String,
+    required: true,
+  },
   temperature: {
     type: Number,
     required: true,
@@ -26,15 +35,6 @@ const SensorDataSchema = new Schema({
   timestamp: {
     type: Date,
     default: Date.now,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Reference to the User model
-    required: true,
-  },
-  hardwareId: {
-    type: String,
-    required: true,
   },
 });
 

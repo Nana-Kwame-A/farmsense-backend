@@ -27,11 +27,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  role: {
+  expoPushToken: {
     type: String,
-    enum: ["user", "admin"], // Optional: Restrict possible values
-    default: "user",
-    required: true,
+    default: null, // Add this field to store the Expo push token
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
   isDeviceRegistered: {
     type: Boolean,

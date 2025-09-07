@@ -163,3 +163,35 @@ exports.unlinkDevice = async (req, res) => {
     res.status(500).json({ message: "Server error unlinking device", error: error.message });
   }
 };
+
+exports.updatePushToken = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { expoPushToken } = req.body;
+
+    if (!expoPushToken) {
+      return res.status(400).json({ message: 'expoPushToken is required' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { expoPushToken, updatedAt: Date.now() },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ 
+      message: 'Push token updated successfully',
+      user 
+    });
+  } catch (error) {
+    console.error('Error updating push token:', error);
+    res.status(500).json({ 
+      message: 'Server error updating push token', 
+      error: error.message 
+    });
+  }
+};

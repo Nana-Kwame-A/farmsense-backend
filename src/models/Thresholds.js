@@ -12,14 +12,15 @@ const mongoose = require('mongoose');
 // This is useful for applications that need to monitor environmental conditions and alert users
 // when thresholds are exceeded.
 const thresholdsSchema = new mongoose.Schema({
-  temperature: { type: Number, default: 35 },
-  humidity: { type: Number, default: 70 },
-  ammonia: { type: Number, default: 20 },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Reference to the User model
     required: true, // Ensure that every threshold document is linked to a user
-  }
+  },
+  temperature: { type: Number, default: 35 },
+  humidity: { type: Number, default: 70 },
+  ammonia: { type: Number, default: 20 },
+  
 });
 
 module.exports = mongoose.model('Thresholds', thresholdsSchema);
