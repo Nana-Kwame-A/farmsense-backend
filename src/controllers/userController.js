@@ -74,6 +74,7 @@ exports.getUserDashboard = async (req, res) => {
 
     res.status(200).json({
       user,
+      devices,
       sensorData,
       thresholds,
       controls,
@@ -150,9 +151,9 @@ exports.linkDevice = async (req, res) => {
 exports.unlinkDevice = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { deviceId } = req.body;
+    const { hardwareId } = req.body;
 
-    const device = await Device.findOneAndDelete({ userId, deviceId });
+    const device = await Device.findOneAndDelete({ userId, hardwareId });
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
     }
