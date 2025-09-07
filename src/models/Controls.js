@@ -17,7 +17,10 @@ const controlsSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-  }
+  },
+  lastTempAlert: { type: Boolean, default: false },
+  lastHumidityAlert: { type: Boolean, default: false },
+  lastAmmoniaAlert: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Controls', controlsSchema);

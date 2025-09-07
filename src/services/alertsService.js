@@ -4,6 +4,7 @@ const Controls = require("../models/Controls");
 const Alert = require("../models/Alerts");
 const { sendPushNotification } = require("./pushService");
 const User = require("../models/User");
+const e = require("cors");
 
 async function checkAndHandleThresholds(userId, sensorData, io) {
   const thresholds = await Thresholds.findOne({ userId });
@@ -12,97 +13,156 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
   const { temperature, humidity, nh3 } = sensorData;
   const alerts = [];
 
+  // Load last states
+  let control = await Controls.findOne({ userId });
+  if (!control) {
+    control = await Controls.create({
+      userId,
+      lastTempAlert: false,
+      lastHumidityAlert: false,
+      lastAmmoniaAlert: false,
+    });
+  }
+
+  const overrideActive =
+    control.manualOverrideEndTimestamp &&
+    control.manualOverrideEndTimestamp > Date.now();
+
   // --- Temperature check ---
   if (temperature > thresholds.temperature) {
-    alerts.push({
-      userId,
-      timestamp: Date.now(),
-      type: "Temperature",
-      value: temperature,
-      message: `Temperature exceeded threshold`,
-      severity: "warning",
-    });
+    if (!control.lastTempAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Temperature",
+        value: temperature,
+        message: `Temperature exceeded threshold`,
+        severity: "warning",
+      });
 
-    // Auto-fan ON
-    await Controls.findOneAndUpdate(
-      { userId },
-      { fanStatus: true, fanAutoMode: true },
-      { upsert: true, new: true }
-    );
+      if (!overrideActive) {
+        await Controls.findOneAndUpdate(
+          { userId },
+          { lastTempAlert: true, fanStatus: true, fanAutoMode: true }
+        );
 
-    alerts.push({
-      userId,
-      timestamp: Date.now(),
-      type: "Fan Control",
-      value: 1,
-      message: "Fan automatically turned ON due to high temperature.",
-      severity: "info",
-    });
+        alerts.push({
+          userId,
+          timestamp: Date.now(),
+          type: "Fan Control",
+          value: 1,
+          message: "Fan automatically turned ON due to high temperature.",
+          severity: "info",
+        });
+      } else {
+        await Controls.findOneAndUpdate({ userId }, { lastTempAlert: true });
+        console.log("Manual override active, skipping fan auto-control.");
+      }
+    }
+  } else {
+    if (control.lastTempAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Temperature",
+        value: temperature,
+        message: `Temperature back to normal`,
+        severity: "info",
+      });
+
+      await Controls.findOneAndUpdate({ userId }, { lastTempAlert: false });
+    }
   }
 
   // --- Humidity check ---
   if (humidity > thresholds.humidity) {
-    alerts.push({
-      userId,
-      timestamp: Date.now(),
-      type: "Humidity",
-      value: humidity,
-      message: `Humidity exceeded threshold`,
-      severity: "warning",
-    });
+    if (!control.lastHumidityAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Humidity",
+        value: humidity,
+        message: `Humidity exceeded threshold`,
+        severity: "warning",
+      });
+
+      await Controls.findOneAndUpdate({ userId }, { lastHumidityAlert: true });
+    }
+  } else {
+    if (control.lastHumidityAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Humidity",
+        value: humidity,
+        message: `Humidity back to normal`,
+        severity: "info",
+      });
+
+      await Controls.findOneAndUpdate({ userId }, { lastHumidityAlert: false });
+    }
   }
 
   // --- Ammonia check ---
   if (nh3 > thresholds.ammonia) {
-    alerts.push({
-      userId,
-      timestamp: Date.now(),
-      type: "Ammonia",
-      value: nh3,
-      message: `Ammonia exceeded safe level`,
-      severity: "danger",
-    });
+    if (!control.lastAmmoniaAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Ammonia",
+        value: nh3,
+        message: `Ammonia exceeded safe level`,
+        severity: "danger",
+      });
 
-    // Auto-fan ON
-    await Controls.findOneAndUpdate(
-      { userId },
-      { fanStatus: true, fanAutoMode: true },
-      { upsert: true, new: true }
-    );
+      if (!overrideActive) {
+        await Controls.findOneAndUpdate(
+          { userId },
+          { lastAmmoniaAlert: true, fanStatus: true, fanAutoMode: true }
+        );
 
-    alerts.push({
-      userId,
-      timestamp: Date.now(),
-      type: "Fan Control",
-      value: 1,
-      message: "Fan automatically turned ON due to high ammonia levels.",
-      severity: "info",
-    });
+        alerts.push({
+          userId,
+          timestamp: Date.now(),
+          type: "Fan Control",
+          value: 1,
+          message: "Fan automatically turned ON due to high ammonia levels.",
+          severity: "info",
+        });
+      } else {
+        await Controls.findOneAndUpdate({ userId }, { lastAmmoniaAlert: true });
+        console.log("Manual override active, skipping fan auto-control.");
+      }
+    }
+  } else {
+    if (control.lastAmmoniaAlert) {
+      alerts.push({
+        userId,
+        timestamp: Date.now(),
+        type: "Ammonia",
+        value: nh3,
+        message: `Ammonia back to normal`,
+        severity: "info",
+      });
+
+      await Controls.findOneAndUpdate({ userId }, { lastAmmoniaAlert: false });
+    }
   }
 
   // Save & emit alerts
   if (alerts.length > 0) {
     try {
       await Alert.insertMany(alerts);
-    } catch (err) {
-      console.error("Failed to save alerts:", err);
-    }
-
-    try {
       io.to(userId).emit("new-alerts", { userId, alerts });
-    } catch (err) {
-      console.error("Failed to emit alerts:", err);
-    }
 
-    try {
       const user = await User.findById(userId);
-      if (user && user.expoPushToken) {
+      if (user?.expoPushToken) {
         for (const alert of alerts) {
           await sendPushNotification(user.expoPushToken, alert.message);
         }
       }
     } catch (err) {
-      console.error("Failed to send push notifications:", err);
+      console.error("Failed to process alerts:", err);
     }
   }
 }
