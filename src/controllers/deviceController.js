@@ -81,6 +81,7 @@ exports.receiveSensorData = async (req, res) => {
     // After saving, emit the new data to all connected clients
         req.io.to(device.userId.toString()).emit("new-sensor-data", updatedSensorData);
     
+        console.log("Calling checkAndHandleThresholds for userId:", device.userId, "with data:", { temperature, humidity, nh3 });
         //Threshold check + handle fan control + create alerts
         await checkAndHandleThresholds(
           device.userId,
