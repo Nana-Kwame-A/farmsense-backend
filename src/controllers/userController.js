@@ -51,6 +51,7 @@ exports.registerUser = async (req, res) => {
 
 // Get all dashboard data for a user (refactored for deviceId-based system)
 const Device = require('../models/Device');
+const { default: mongoose } = require('mongoose');
 exports.getUserDashboard = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -119,11 +120,12 @@ exports.linkDevice = async (req, res) => {
       return res.status(400).json({ message: "Device already linked to another user" });
     }
 
-    device = new Device({ userId, hardwareId });
+    device = new Device({ userId: new mongoose.Types.ObjectId(userId), hardwareId });
     await device.save();
 
     res.status(201).json({ message: "Device linked successfully", device });
   } catch (error) {
+    console.log("Error linking device:", error);
     res.status(500).json({ message: "Server error linking device", error: error.message });
   }
 };
