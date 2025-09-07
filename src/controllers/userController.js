@@ -5,6 +5,7 @@ const SensorData = require('../models/SensorData');
 const Thresholds = require('../models/Thresholds');
 const Controls = require('../models/Controls');
 const Alert = require('../models/Alerts');
+const mongoose = require('mongoose');
 
 // Get user profile by userId
 exports.getUserProfile = async (req, res) => {
@@ -111,12 +112,19 @@ exports.linkDevice = async (req, res) => {
     const { userId } = req.params;
     const { hardwareId } = req.body;
 
+    console.log('Linking device - userId:',  userId, hardwareId ); // 👈 log input data
+
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId format" });
     }
 
     if (!hardwareId) {
       return res.status(400).json({ message: "Hardware ID is required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     let device = await Device.findOne({ hardwareId });
