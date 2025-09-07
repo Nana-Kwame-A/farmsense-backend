@@ -8,19 +8,15 @@ const birdConfigSchema = new mongoose.Schema({
 
 // Define the Controls schema
 const controlsSchema = new mongoose.Schema({
-  fanStatus: { type: Boolean, default: false },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   fanAutoMode: { type: Boolean, default: true },
-  manualOverrideEndTimestamp: { type: Date, required: false },
-  useCustomThresholds: { type: Boolean, default: false },
-  birdConfig: { type: birdConfigSchema, required: false, default: null }, // Add this field
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+  fanStatus: { type: Boolean, default: false },
+  manualOverrideEndTimestamp: { type: Date, default: null },
   lastTempAlert: { type: Boolean, default: false },
   lastHumidityAlert: { type: Boolean, default: false },
   lastAmmoniaAlert: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Controls', controlsSchema);

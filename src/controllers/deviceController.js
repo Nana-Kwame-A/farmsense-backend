@@ -3,6 +3,8 @@ const SensorData = require("../models/SensorData");
 const User = require("../models/User");
 const Device = require("../models/Device");
 const { checkAndHandleThresholds } = require("../services/alertsService");
+const Controls = require('../models/Controls');
+
 
 
 exports.heartbeat = async (req, res) => {
@@ -120,3 +122,41 @@ exports.registerDevice = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Get controls for a device by hardwareId
+exports.getDeviceControls = async (req, res) => {
+  try {
+    const { hardwareId } = req.params;
+
+    // Find the device first
+    const device = await Device.findOne({ hardwareId });
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    if (!device.userId) {
+      return res.status(400).json({ message: "Device is not linked to any user" });
+    }
+
+    // Get controls for the user associated with this device
+    const controls = await Controls.findOne({ userId: device.userId });
+    if (!controls) {
+      // Return default controls if none exist
+      return res.status(200).json({
+        fanAutoMode: true,
+        fanStatus: false,
+        manualOverrideEndTimestamp: null
+      });
+    }
+
+    res.status(200).json({
+      fanAutoMode: controls.fanAutoMode || true,
+      fanStatus: controls.fanStatus || false,
+      manualOverrideEndTimestamp: controls.manualOverrideEndTimestamp || null
+    });
+  } catch (error) {
+    console.error("Error getting device controls:", error);
+    res.status(500).json({ message: "Server error getting device controls", error: error.message });
+  }
+};
+
