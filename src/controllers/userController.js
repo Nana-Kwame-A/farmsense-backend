@@ -167,15 +167,15 @@ exports.unlinkDevice = async (req, res) => {
 exports.updatePushToken = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { expoPushToken } = req.body;
+    const { pushToken } = req.body;
 
-    if (!expoPushToken) {
-      return res.status(400).json({ message: 'expoPushToken is required' });
+    if (!pushToken) {
+      return res.status(400).json({ message: 'pushToken is required' });
     }
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { expoPushToken, updatedAt: Date.now() },
+      { pushToken, updatedAt: Date.now() },
       { new: true }
     ).select('-password');
 
