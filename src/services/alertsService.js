@@ -169,11 +169,15 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
       await Alert.insertMany(alerts);
       console.log("Emitting alerts to", userId, alerts);
       io.to(userId).emit("new-alerts", { userId, alerts });
+console.log("Alerts emitted successfully.");
 
+      // Send push notifications
       const user = await User.findById(userId);
       if (user?.expoPushToken) {
         for (const alert of alerts) {
+          console.log("Sending push notification for alert:", alert);
           await sendPushNotification(user.expoPushToken, alert.message);
+          console.log("Push notification sent for alert:", alert);
         }
       }
     } catch (err) {
