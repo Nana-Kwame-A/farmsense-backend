@@ -187,6 +187,8 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
     try {
       await Alert.insertMany(alerts);
       console.log("Emitting alerts to", userId.toString(), alerts);
+      console.log("Rooms available:", io.sockets.adapter.rooms);
+      console.log("Emitting to room:", userId.toString());
       io.to(userId.toString()).emit("new-alerts", { userId, alerts });
       console.log("Alerts emitted successfully.");
 
