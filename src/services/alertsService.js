@@ -34,7 +34,12 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
   // --- Temperature check ---
   if (temperature > thresholds.temperature) {
     if (!control.lastTempAlert) {
-      console.log("Temperature exceeded for user", userId, "value:", temperature);
+      console.log(
+        "Temperature exceeded for user",
+        userId,
+        "value:",
+        temperature
+      );
       alerts.push({
         userId,
         timestamp: Date.now(),
@@ -59,14 +64,21 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
         });
       } else {
         await Controls.findOneAndUpdate({ userId }, { lastTempAlert: true });
-        console.log("Manual override active, skipping fan auto-control for temperature.");
+        console.log(
+          "Manual override active, skipping fan auto-control for temperature."
+        );
       }
     } else {
       console.log("Temperature already in alert state, skipping duplicate.");
     }
   } else {
     if (control.lastTempAlert) {
-      console.log("Temperature back to normal for user", userId, "value:", temperature);
+      console.log(
+        "Temperature back to normal for user",
+        userId,
+        "value:",
+        temperature
+      );
       alerts.push({
         userId,
         timestamp: Date.now(),
@@ -99,7 +111,12 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
     }
   } else {
     if (control.lastHumidityAlert) {
-      console.log("Humidity back to normal for user", userId, "value:", humidity);
+      console.log(
+        "Humidity back to normal for user",
+        userId,
+        "value:",
+        humidity
+      );
       alerts.push({
         userId,
         timestamp: Date.now(),
@@ -141,7 +158,9 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
         });
       } else {
         await Controls.findOneAndUpdate({ userId }, { lastAmmoniaAlert: true });
-        console.log("Manual override active, skipping fan auto-control for ammonia.");
+        console.log(
+          "Manual override active, skipping fan auto-control for ammonia."
+        );
       }
     } else {
       console.log("Ammonia already in alert state, skipping duplicate.");
@@ -167,9 +186,9 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
     console.log("About to save", alerts.length, "alerts for user", userId);
     try {
       await Alert.insertMany(alerts);
-      console.log("Emitting alerts to", userId, alerts);
-      io.to(userId).emit("new-alerts", { userId, alerts });
-console.log("Alerts emitted successfully.");
+      console.log("Emitting alerts to", userId.toString(), alerts);
+      io.to(userId.toString()).emit("new-alerts", { userId, alerts });
+      console.log("Alerts emitted successfully.");
 
       // Send push notifications
       const user = await User.findById(userId);
