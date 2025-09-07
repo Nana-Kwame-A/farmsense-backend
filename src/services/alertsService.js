@@ -189,7 +189,7 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
       console.log("Emitting alerts to", userId.toString(), alerts);
       console.log("Rooms available:", io.sockets.adapter.rooms);
       console.log("Emitting to room:", userId.toString());
-      io.to(userId.toString()).emit("new-alerts", { userId, alerts });
+      io.to(userId.toString()).emit("new-alert", { userId, alerts });
       console.log("Alerts emitted successfully.");
 
       // Send push notifications
