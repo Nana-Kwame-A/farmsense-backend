@@ -6,6 +6,8 @@ const Thresholds = require('../models/Thresholds');
 const Controls = require('../models/Controls');
 const Alert = require('../models/Alerts');
 const mongoose = require('mongoose');
+const Device = require('../models/Device');
+
 
 // Get user profile by userId
 exports.getUserProfile = async (req, res) => {
@@ -51,8 +53,6 @@ exports.registerUser = async (req, res) => {
 
 
 // Get all dashboard data for a user (refactored for deviceId-based system)
-const Device = require('../models/Device');
-const { default: mongoose } = require('mongoose');
 exports.getUserDashboard = async (req, res) => {
   try {
     const { userId } = req.params;
