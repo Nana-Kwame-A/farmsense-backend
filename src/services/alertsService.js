@@ -194,12 +194,22 @@ async function checkAndHandleThresholds(userId, sensorData, io) {
 
       // Send push notifications
       const user = await User.findById(userId);
+      console.log('User found for push notification:', user ? 'Yes' : 'No');
+      console.log('User expoPushToken:', user?.expoPushToken);
+      
       if (user?.expoPushToken) {
+        console.log('Sending push notifications for', alerts.length, 'alerts');
         for (const alert of alerts) {
           console.log("Sending push notification for alert:", alert);
-          await sendPushNotification(user.expoPushToken, alert.message);
-          console.log("Push notification sent for alert:", alert);
+          try {
+            const result = await sendPushNotification(user.expoPushToken, alert.message);
+            console.log("Push notification result:", result);
+          } catch (pushError) {
+            console.error("Push notification error:", pushError);
+          }
         }
+      } else {
+        console.log('No expoPushToken found for user:', userId);
       }
     } catch (err) {
       console.error("Failed to process alerts:", err);

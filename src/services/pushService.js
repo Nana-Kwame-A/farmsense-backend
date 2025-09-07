@@ -1,26 +1,41 @@
+const { Expo } = require('expo-server-sdk');
+
+const expo = new Expo();
+
 async function sendPushNotification(expoPushToken, message) {
   try {
-    const response = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Accept-encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: expoPushToken,
-        sound: "default",
-        title: "Poultry Alert 🚨",
-        body: message,
-        data: { type: "alert" },
-      }),
-    });
+    console.log('Attempting to send push notification to:', expoPushToken);
+    console.log('Message:', message);
 
-    const result = await response.json();
-    console.log("Push result:", result);
-    return result;
-  } catch (err) {
-    console.error("Failed to send push:", err);
+    if (!Expo.isExpoPushToken(expoPushToken)) {
+      console.error('Invalid Expo push token:', expoPushToken);
+      return;
+    }
+
+    const messages = [{
+      to: expoPushToken,
+      sound: 'default',
+      title: 'Farm Alert',
+      body: message,
+      data: { message },
+    }];
+
+    const chunks = expo.chunkPushNotifications(messages);
+    const tickets = [];
+
+    for (let chunk of chunks) {
+      try {
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        console.log('Push notification tickets:', ticketChunk);
+        tickets.push(...ticketChunk);
+      } catch (error) {
+        console.error('Error sending push notification chunk:', error);
+      }
+    }
+
+    return tickets;
+  } catch (error) {
+    console.error('Error in sendPushNotification:', error);
   }
 }
 
