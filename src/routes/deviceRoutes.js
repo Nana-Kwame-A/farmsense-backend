@@ -16,4 +16,5 @@ router.patch('/:hardwareId/controls', deviceController.updateDeviceControls);
 router.post('/:hardwareId/heartbeat', deviceController.heartbeat);
 router.get('/:hardwareId/heartbeat-status', deviceController.heartbeatStatus);
 router.post('/:hardwareId/sensor-data', deviceController.receiveSensorData);
+router.get('/:hardwareId/thresholds', deviceController.getDeviceThresholds);
 module.exports = router;

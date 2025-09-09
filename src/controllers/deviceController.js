@@ -242,3 +242,34 @@ exports.updateDeviceControls = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+// ✅ NEW: Get thresholds for a device
+exports.getDeviceThresholds = async (req, res) => {
+    try {
+        const { hardwareId } = req.params;
+        
+        const device = await Device.findOne({ hardwareId }).populate('userId');
+        if (!device) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
+        const thresholds = await Thresholds.findOne({ userId: device.userId._id });
+        
+        if (!thresholds) {
+            // Return default thresholds if none exist
+            return res.status(200).json({
+                temperature: 30.0,
+                humidity: 80.0,
+                ammonia: 10.0
+            });
+        }
+
+        res.status(200).json({
+            temperature: thresholds.temperature,
+            humidity: thresholds.humidity,
+            ammonia: thresholds.ammonia
+        });
+    } catch (error) {
+        console.error('Error getting device thresholds:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
