@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Device = require("../models/Device");
 const { checkAndHandleThresholds } = require("../services/alertsService");
 const Controls = require("../models/Controls");
+const Thresholds = require("../models/Thresholds");
 
 exports.heartbeat = async (req, res) => {
   const { hardwareId } = req.params;
