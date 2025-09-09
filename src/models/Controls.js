@@ -11,12 +11,12 @@ const controlsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   fanAutoMode: { type: Boolean, default: true },
   fanStatus: { type: Boolean, default: false },
-  manualOverrideEndTimestamp: { type: Date, default: null },
+  manualOverrideEndTimestamp: { type: Number, default: null },
   lastTempAlert: { type: Boolean, default: false },
   lastHumidityAlert: { type: Boolean, default: false },
   lastAmmoniaAlert: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Controls', controlsSchema);
