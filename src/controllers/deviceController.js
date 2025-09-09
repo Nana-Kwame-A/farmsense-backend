@@ -247,15 +247,20 @@ exports.updateDeviceControls = async (req, res) => {
 exports.getDeviceThresholds = async (req, res) => {
     try {
         const { hardwareId } = req.params;
+
+        console.log(`Fetching thresholds for hardwareId: ${hardwareId}`);
         
         const device = await Device.findOne({ hardwareId }).populate('userId');
         if (!device) {
             return res.status(404).json({ message: 'Device not found' });
         }
 
+        console.log(`Found device for userId: ${device.userId._id}`);
+
         const thresholds = await Thresholds.findOne({ userId: device.userId._id });
         
         if (!thresholds) {
+            console.log(`No custom thresholds found for userId: ${device.userId._id}`);
             // Return default thresholds if none exist
             return res.status(200).json({
                 temperature: 30.0,
@@ -264,6 +269,7 @@ exports.getDeviceThresholds = async (req, res) => {
             });
         }
 
+        console.log(`Returning thresholds for userId: ${device.userId._id}`, thresholds);
         res.status(200).json({
             temperature: thresholds.temperature,
             humidity: thresholds.humidity,
